@@ -1,15 +1,7 @@
 @echo off
 
-set DEPOT_TOOLS_WIN_TOOLCHAIN=0
-set vs2019_install=C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise
-
-git.exe clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-set Path=%Path%;%~dp0depot_tools
-
-call gclient.bat
-if not exist .\v8 call fetch.bat v8
 cd .\v8
-
+git.exe pull
 git.exe checkout %V8BUILD_VERSION%
 call gclient.bat sync
 

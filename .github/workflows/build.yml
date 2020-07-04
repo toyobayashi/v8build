@@ -5,6 +5,10 @@ on: [push]
 jobs:
   build:
     name: Build
+    env:
+      V8BUILD_VERSION: '8.6.57'
+      DEPOT_TOOLS_WIN_TOOLCHAIN: '0'
+      vs2019_install: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -15,12 +19,40 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Set up Python 2.7
+      uses: actions/setup-python@v2
+      with:
+        python-version: '2.7'
+        architecture: 'x64'
+    
+    - name: Cache depot_tools
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-depot-tools
+      with:
+        path: ./depot_tools
+        key: ${{ matrix.os }}-build-${{ env.cache-name }}
+        restore-keys: |
+          ${{ matrix.os }}-build-${{ env.cache-name }}
+    
+    - name: Cache v8
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-v8
+      with:
+        path: ./v8
+        key: ${{ matrix.os }}-build-${{ env.cache-name }}
+        restore-keys: |
+          ${{ matrix.os }}-build-${{ env.cache-name }}
+    
+
     - name: Windows build
       if: ${{ matrix.os == 'windows-latest' }}
-      env:
-        V8BUILD_VERSION: '8.6.57'
       shell: cmd
-      run: .\build.bat
+      run: |
+        call .\get_depot_tools.bat
+        call .\fetch_v8.bat
+        call .\build.bat
 
     # - name: Linux build
     #   if: ${{ matrix.os == 'ubuntu-latest' }}
