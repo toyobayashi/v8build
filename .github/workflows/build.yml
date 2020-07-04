@@ -1,0 +1,59 @@
+name: Build
+
+on: [push]
+
+jobs:
+  build:
+    name: Build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # os: [windows-latest, ubuntu-latest, macos-latest]
+        os: [windows-latest]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Windows build
+      if: ${{ matrix.os == 'windows-latest' }}
+      env:
+        V8BUILD_VERSION: '8.6.57'
+      shell: cmd
+      run: .\build.bat
+
+    # - name: Linux build
+    #   if: ${{ matrix.os == 'ubuntu-latest' }}
+    #   shell: bash
+    #   run: |
+    #     mkdir -p ./out
+    #     echo "linux" > ./out/linux.txt
+
+    # - name: macOS build
+    #   if: ${{ matrix.os == 'macos-latest' }}
+    #   shell: bash
+    #   run: |
+    #     mkdir -p ./out
+    #     echo "darwin" > ./out/darwin.txt
+    
+    - name: Create release
+      # if: ${{ startsWith(github.event.ref, 'refs/tags') }}
+      uses: toyobayashi/upload-release-assets@v3.0.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.event.after }} # required, create if the tag does not exist
+        release_name: ${{ github.event.after }} # required
+        # target_commitish: ''
+        # body: ''
+        draft: true
+        prerelease: false
+
+        # The value of `assets` field can be a single line string that includes
+        # paths or globs seperated by `;`
+
+        # assets: ./out/*.txt; ./dist/main.js; ./not/exists
+
+        # It can be also multiple line
+        assets: |
+          ./v8*.zip
