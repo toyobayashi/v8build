@@ -6,7 +6,7 @@ jobs:
   build:
     name: Build
     env:
-      V8BUILD_VERSION: '8.6.57'
+      V8BUILD_VERSION: '8.3.110.13'
       DEPOT_TOOLS_WIN_TOOLCHAIN: '0'
       vs2019_install: C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise
     runs-on: ${{ matrix.os }}
@@ -24,7 +24,7 @@ jobs:
       with:
         python-version: '2.7'
         architecture: 'x64'
-    
+
     - name: Cache depot_tools
       uses: actions/cache@v2
       env:
@@ -34,25 +34,28 @@ jobs:
         key: ${{ matrix.os }}-build-${{ env.cache-name }}
         restore-keys: |
           ${{ matrix.os }}-build-${{ env.cache-name }}
-    
-    - name: Cache v8
-      uses: actions/cache@v2
-      env:
-        cache-name: cache-v8
-      with:
-        path: ./v8
-        key: ${{ matrix.os }}-build-${{ env.cache-name }}
-        restore-keys: |
-          ${{ matrix.os }}-build-${{ env.cache-name }}
-    
 
-    - name: Windows build
+    - name: Windows fetch
       if: ${{ matrix.os == 'windows-latest' }}
       shell: cmd
       run: |
         call .\get_depot_tools.bat
-        call .\fetch_v8.bat
-        call .\build.bat
+        call fetch.bat v8
+
+    - name: Cache output
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-output
+      with:
+        path: ./v8/out.gn
+        key: ${{ matrix.os }}-build-${{ env.cache-name }}
+        restore-keys: |
+          ${{ matrix.os }}-build-${{ env.cache-name }}
+
+    - name: Windows build
+      if: ${{ matrix.os == 'windows-latest' }}
+      shell: cmd
+      run: call .\build.bat
 
     # - name: Linux build
     #   if: ${{ matrix.os == 'ubuntu-latest' }}
@@ -67,7 +70,7 @@ jobs:
     #   run: |
     #     mkdir -p ./out
     #     echo "darwin" > ./out/darwin.txt
-    
+
     - name: Create release
       # if: ${{ startsWith(github.event.ref, 'refs/tags') }}
       uses: toyobayashi/upload-release-assets@v3.0.0

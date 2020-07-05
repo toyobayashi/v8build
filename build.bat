@@ -1,7 +1,6 @@
 @echo off
 
 cd .\v8
-git.exe pull
 git.exe checkout %V8BUILD_VERSION%
 call gclient.bat sync
 
