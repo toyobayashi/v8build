@@ -48,9 +48,9 @@ jobs:
         cache-name: cache-output
       with:
         path: ./v8/out.gn
-        key: ${{ matrix.os }}-build-${{ env.cache-name }}
+        key: ${{ matrix.os }}-build-${{ env.cache-name }}-${{ github.event.after }}
         restore-keys: |
-          ${{ matrix.os }}-build-${{ env.cache-name }}
+          ${{ matrix.os }}-build-${{ env.cache-name }}-
 
     - name: Windows build
       if: ${{ matrix.os == 'windows-latest' }}
